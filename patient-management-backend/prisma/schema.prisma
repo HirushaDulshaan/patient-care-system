@@ -1,0 +1,61 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url eka methana naha, eka config eke thiyenawa (Kalin haduwa wage)
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  role          Role     @default(PATIENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  password      String?  // <-- Meka add karanna
+
+  // Relationships
+  patientProfile Patient?
+  doctorProfile  Doctor?
+}
+
+model Patient {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  fullName  String
+  phone     String?
+  nic       String   @unique // High Security logic eka methanadi apply karamu
+
+  appointments Appointment[]
+}
+
+model Doctor {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  specialization String
+  licenseNumber  String   @unique
+
+  appointments   Appointment[]
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  doctorId    String
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  scheduledAt DateTime
+  status      String   @default("PENDING")
+  priority    Int      @default(1) // Priority Queue logic ekata
+}
