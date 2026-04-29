@@ -8,6 +8,24 @@ type User {
   role: String!
 }
 
+type StaffProfileType {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  designation: String!
+  phone: String
+  city: String
+  address1: String
+  address2: String
+  user: User!
+  createdAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type LoginResponse {
   access_token: String!
   user: User!
@@ -15,9 +33,21 @@ type LoginResponse {
 
 type Query {
   sayHello: String!
+  getAllStaff: [StaffProfileType!]!
 }
 
 type Mutation {
-  register(email: String!, password: String!, role: String!): String!
+  register(email: String!, password: String!, role: Role!): String!
+  registerStaff(email: String!, role: Role!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
   login(email: String!, password: String!): LoginResponse!
+  updateStaff(id: String!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  DOCTOR
+  PATIENT
+  STAFF
+  RECEPTIONIST
 }

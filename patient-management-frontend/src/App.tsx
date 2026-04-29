@@ -19,6 +19,7 @@ import StaffDashboard from "./pages/Reciptinets/StaffDashboard";
 import PrescriptionEntry from "./pages/staff/PrescriptionEntry";
 
 // Common
+import HomePage from "./pages/Home";
 import Login from "./pages/Login";
 import Layout from "./components/Layout";
 import AdminLayout from "./components/AdminLayout";
@@ -33,13 +34,20 @@ import DoctorPatientInsights from "./pages/SuperAdmin/DoctorPatientInsights";
 import DoctorLayout from "./components/DoctorLayout";
 import PatientConsultation from "./pages/Doctor/PatientConsultation";
 import NewMedicalRecord from "./pages/Doctor/NewMedicalRecord";
+import BookAppointment from "./pages/BookAppointment";
+import SpecialistDirectory from "./pages/SpecialistDirectory";
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public Route */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/book-appointment" element={<BookAppointment />} />
+        <Route path="/specialists" element={<SpecialistDirectory />} />
+
+
 
         {/* --- Admin Group --- */}
         <Route element={<AdminLayout />}>
@@ -77,7 +85,7 @@ function App() {
         <Route path="/staff/prescription" element={<PrescriptionEntry />} />
 
         {/* Default Route - Logic එකට අනුව මුලින්ම Login එකට යවමු */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to="/HomePage" />} />
 
         {/* 404 - Page Not Found එකක් ආවොත් Login එකටම යවමු */}
         <Route path="*" element={<Navigate to="/login" />} />

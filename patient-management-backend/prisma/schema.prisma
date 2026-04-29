@@ -10,43 +10,62 @@ datasource db {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   DOCTOR
   PATIENT
+  STAFF
+  RECEPTIONIST
 }
 
 model User {
   id            String   @id @default(uuid())
   email         String   @unique
   role          Role     @default(PATIENT)
+  password      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  password      String?  // <-- Meka add karanna
 
-  // Relationships
+  // Relationships - එක් User කෙනෙකුට තිබිය හැක්කේ එක Profile එකක් පමණි
   patientProfile Patient?
   doctorProfile  Doctor?
+  staffProfile   StaffProfile?
 }
 
-model Patient {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  fullName  String
-  phone     String?
-  nic       String   @unique // High Security logic eka methanadi apply karamu
-
-  appointments Appointment[]
+model StaffProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  phone       String?
+  address1    String?
+  address2    String?
+  city        String?
+  designation String   // Nurse, Receptionist, Pharmacist ලෙස මෙතනට වැටේ
+  createdAt   DateTime @default(now())
 }
 
 model Doctor {
   id             String   @id @default(uuid())
   userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String   // Doctor ගේ නම මෙතනටම ගනිමු
+  lastName       String
   specialization String
   licenseNumber  String   @unique
-
+  phone          String?
   appointments   Appointment[]
+}
+
+model Patient {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  phone     String?
+  nic       String   @unique
+  appointments Appointment[]
 }
 
 model Appointment {
@@ -57,5 +76,5 @@ model Appointment {
   doctor      Doctor   @relation(fields: [doctorId], references: [id])
   scheduledAt DateTime
   status      String   @default("PENDING")
-  priority    Int      @default(1) // Priority Queue logic ekata
+  priority    Int      @default(1)
 }
