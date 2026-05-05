@@ -8,12 +8,12 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
-import { User } from '../user/user.model';
+import { User } from '../models/user.model';
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from './gql-auth.guard';
 import { Role } from '@prisma/client';
-import { StaffProfileType } from '../models/staff.model';
 
+// Role Enum එක GraphQL වලට හඳුන්වා දීම
 registerEnumType(Role, {
   name: 'Role',
 });
@@ -31,13 +31,18 @@ class LoginResponse {
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
+  /**
+   * Security Guard එක වැඩද කියලා බලන්න පොඩි Query එකක්
+   */
   @Query(() => String)
   @UseGuards(GqlAuthGuard)
   sayHello(): string {
     return 'Security Guard passed! You are authorized!';
   }
 
-  // --- 1. Basic Register (Admin/Super Admin) ---
+  /**
+   * 1. මූලික ලියාපදිංචිය (Admin/Super Admin සඳහා)
+   */
   @Mutation(() => String)
   async register(
     @Args('email') email: string,
@@ -48,38 +53,10 @@ export class AuthResolver {
     return `User created successfully with ID: ${user.id}`;
   }
 
-  // --- 2. Staff Registration (With Profiles) ---
-  @Mutation(() => String)
-  async registerStaff(
-    @Args('email') email: string,
-    @Args({ name: 'role', type: () => Role }) role: Role,
-    @Args('firstName') firstName: string,
-    @Args('lastName') lastName: string,
-    @Args('phone') phone: string,
-    @Args('designation') designation: string,
-    @Args('city') city: string,
-    @Args({ name: 'address1', nullable: true }) address1?: string,
-    @Args({ name: 'address2', nullable: true }) address2?: string,
-  ) {
-    // Default password එකක් විදියට 'Staff@123' වගේ එකක් යවමු
-    // පස්සේ Staff Member ට ඒක reset කරගන්න පුළුවන්
-    const result = await this.authService.registerStaff({
-      email,
-      password: 'Staff@123',
-      role,
-      firstName,
-      lastName,
-      phone,
-      designation,
-      city,
-      address1,
-      address2,
-    });
-
-    return `Staff Member ${result.profile.firstName} created successfully!`;
-  }
-
-  // --- 3. Login ---
+  /**
+   * 2. Login කිරීම
+   * මෙහිදී User ගේ email/password නිවැරදි නම් JWT token එකක් ලබාදෙයි.
+   */
   @Mutation(() => LoginResponse)
   async login(
     @Args('email') email: string,
@@ -90,33 +67,5 @@ export class AuthResolver {
       throw new UnauthorizedException('Invalid credentials');
     }
     return this.authService.login(user);
-  }
-
-  @Query(() => [StaffProfileType]) // Dan meka anduran gannawa!
-  async getAllStaff() {
-    return this.authService.getAllStaff();
-  }
-
-  @Mutation(() => String)
-  async updateStaff(
-    @Args('id') id: string,
-    @Args('firstName') firstName: string,
-    @Args('lastName') lastName: string,
-    @Args('phone') phone: string,
-    @Args('designation') designation: string,
-    @Args('city') city: string,
-    @Args({ name: 'address1', nullable: true }) address1?: string,
-    @Args({ name: 'address2', nullable: true }) address2?: string,
-  ) {
-    await this.authService.updateStaff(id, {
-      firstName,
-      lastName,
-      phone,
-      designation,
-      city,
-      address1,
-      address2,
-    });
-    return 'Staff updated successfully!';
   }
 }

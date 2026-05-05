@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { User } from '../user/user.model'; // Oyage User model eka thiyena thana path eka danna
+import { User } from './user.model'; // Oyage User model eka thiyena thana path eka danna
 
 @ObjectType()
 export class StaffProfileType {

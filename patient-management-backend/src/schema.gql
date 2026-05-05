@@ -8,6 +8,51 @@ type User {
   role: String!
 }
 
+type LoginResponse {
+  access_token: String!
+  user: User!
+}
+
+type DoctorCategoryType {
+  id: ID!
+  name: String!
+}
+
+type DoctorScheduleType {
+  id: ID!
+  doctorId: String!
+  workingDate: DateTime!
+  startTime: String!
+  endTime: String!
+  status: String!
+  maxPatients: Int!
+  bookedCount: Int!
+  remainingSeats: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type DoctorType {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  categoryId: String!
+  category: DoctorCategoryType
+  licenseNumber: String!
+  phone: String
+  address1: String
+  address2: String
+  city: String
+  education: String!
+  university: String
+  workingHospital: String
+  user: User!
+  schedules: [DoctorScheduleType!]
+}
+
 type StaffProfileType {
   id: ID!
   firstName: String!
@@ -21,26 +66,35 @@ type StaffProfileType {
   createdAt: DateTime!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
-type LoginResponse {
-  access_token: String!
-  user: User!
+type AppointmentType {
+  id: ID!
+  patientId: String!
+  doctorId: String!
+  scheduledAt: DateTime!
+  status: String!
+  doctor: DoctorType
 }
 
 type Query {
   sayHello: String!
   getAllStaff: [StaffProfileType!]!
+  getAllDoctors: [DoctorType!]!
+  getDoctorSchedules(doctorId: String!): [DoctorScheduleType!]!
+  getAllDoctorCategories: [DoctorCategoryType!]!
+  getAppointmentsByDoctor(doctorId: String!): [AppointmentType!]!
 }
 
 type Mutation {
   register(email: String!, password: String!, role: Role!): String!
-  registerStaff(email: String!, role: Role!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
   login(email: String!, password: String!): LoginResponse!
+  registerStaff(email: String!, role: Role!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
   updateStaff(id: String!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
+  registerDoctor(email: String!, firstName: String!, lastName: String!, categoryId: String!, licenseNumber: String!, phone: String, address1: String, address2: String, city: String, education: String!, university: String, workingHospital: String): DoctorType!
+  updateDoctor(id: String!, firstName: String!, lastName: String!, categoryId: String!, phone: String, address1: String, address2: String, city: String, education: String!, university: String, workingHospital: String): Boolean!
+  updateDoctorRoster(doctorId: String!, slots: [ScheduleSlotInput!]!): Boolean!
+  createDoctorCategory(name: String!): DoctorCategoryType!
+  getStripeSessionUrl(doctorId: String!, doctorName: String!, patientName: String!, nic: String!, phone: String!, scheduledAt: String!): String!
+  createAppointment(patientData: PatientInput!, doctorId: String!, scheduledAt: String!): AppointmentType!
 }
 
 enum Role {
@@ -50,4 +104,17 @@ enum Role {
   PATIENT
   STAFF
   RECEPTIONIST
+}
+
+input ScheduleSlotInput {
+  workingDate: String!
+  startTime: String!
+  endTime: String!
+  status: String!
+}
+
+input PatientInput {
+  fullName: String!
+  nic: String!
+  phone: String!
 }

@@ -46,19 +46,23 @@ const StaffManagement = () => {
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
     const [address1, setAddress1] = useState('');
-    const [address2, setAddress2] = useState(''); // <--- Methana thiyenawa
+    const [address2, setAddress2] = useState('');
     const [city, setCity] = useState('');
     const [designation, setDesignation] = useState('Nurse');
-    
+
     // Logic States
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [viewingStaff, setViewingStaff] = useState<any | null>(null);
 
+    // Pagination States
+    const [currentPage, setCurrentPage] = useState(1);
+    const recordsPerPage = 8;
+
     // Apollo Hooks
     const { data, loading: queryLoading } = useQuery(GET_ALL_STAFF);
     const { data: roleData } = useQuery(GET_ROLES);
-    
+
     const [registerStaff, { loading: regLoading }] = useMutation(REGISTER_STAFF, {
         refetchQueries: [{ query: GET_ALL_STAFF }],
     });
@@ -66,6 +70,12 @@ const StaffManagement = () => {
     const [updateStaff, { loading: updateLoading }] = useMutation(UPDATE_STAFF, {
         refetchQueries: [{ query: GET_ALL_STAFF }],
     });
+
+    // Pagination Logic
+    const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+    const currentStaff = data?.getAllStaff.slice(indexOfFirstRecord, indexOfLastRecord) || [];
+    const totalPages = Math.ceil((data?.getAllStaff.length || 0) / recordsPerPage);
 
     const resetForm = () => {
         setEmail(''); setFirstName(''); setLastName(''); setPhone('');
@@ -83,7 +93,7 @@ const StaffManagement = () => {
         setPhone(staff.phone || '');
         setCity(staff.city || '');
         setAddress1(staff.address1 || '');
-        setAddress2(staff.address2 || ''); // <--- Edit karaddi load wenna damma
+        setAddress2(staff.address2 || '');
         setDesignation(staff.designation);
     };
 
@@ -107,8 +117,9 @@ const StaffManagement = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans relative">
-            
+        /* FIX 3: h-screen overflow-hidden on root keeps everything in one viewport — no page-level scroll */
+        <div className="h-screen overflow-hidden bg-slate-50 flex flex-col">
+
             {/* --- Info Modal (Popup) --- */}
             {viewingStaff && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -130,21 +141,31 @@ const StaffManagement = () => {
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto">
-                <div className="mb-10 flex justify-between items-center">
+            {/* FIX 1: Reduced top padding from p-4 md:p-6 + mb-10 → pb-2 pt-3 px-4 md:px-6 + mb-3 */}
+            <div className="max-w-7xl w-full mx-auto px-4 md:px-6 pt-0.5 pb-1 flex-shrink-0">
+                <div className="flex justify-between items-center mb-2">
                     <div>
                         <h2 className="text-4xl font-black text-slate-900 tracking-tight">Staff Management</h2>
-                        <p className="text-slate-500 font-medium mt-1">Manage hospital support staff including Nurses and Receptionists.</p>
+                        <p className="text-slate-500 font-medium mt-0.5">Manage hospital support staff including Nurses and Receptionists.</p>
                     </div>
                     <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-lg font-bold text-xs uppercase tracking-widest">Administrator Mode</div>
                 </div>
+            </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Main content area — fills remaining height, no overflow on this level */}
+            <div className="flex-1 overflow-hidden max-w-7xl w-full mx-auto px-4 md:px-6 pb-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+
                     {/* --- Left Form --- */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm sticky top-10">
-                            <h3 className="text-xl font-black text-slate-800 mb-6">{isEditing ? "Update Details" : "Register New Staff"}</h3>
-                            <form className="space-y-4" onSubmit={handleSubmit}>
+                    {/* FIX 2: flex flex-col so button stays at bottom; form area scrollable */}
+                    <div className="lg:col-span-4 h-full overflow-hidden">
+                        <div className="bg-white rounded-[3rem] border border-slate-200 shadow-sm h-full flex flex-col overflow-hidden">
+                            <div className="p-8 pb-4 flex-shrink-0">
+                                <h3 className="text-xl font-black text-slate-800">{isEditing ? "Update Details" : "Register New Staff"}</h3>
+                            </div>
+
+                            {/* Scrollable fields area */}
+                            <div className="flex-1 overflow-y-auto px-8 space-y-4 pb-2">
                                 <input value={firstName} onChange={(e) => setFirstName(e.target.value)} type="text" placeholder="First Name" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:ring-blue-500 transition-all" required />
                                 <input value={lastName} onChange={(e) => setLastName(e.target.value)} type="text" placeholder="Last Name" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:ring-blue-500 transition-all" required />
                                 <input value={phone} onChange={(e) => setPhone(e.target.value)} type="text" placeholder="Contact Number" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-sm focus:ring-2 focus:ring-blue-500 transition-all" required />
@@ -165,26 +186,39 @@ const StaffManagement = () => {
                                         ))}
                                     </select>
                                 </div>
+                            </div>
 
-                                <button disabled={regLoading || updateLoading} type="submit" className="w-full bg-slate-900 text-white font-black py-5 rounded-[2rem] mt-6 shadow-xl active:scale-95 transition-all uppercase tracking-widest text-xs">
+                            {/* FIX 2: Sticky submit button — always visible at bottom */}
+                            <div className="p-8 pt-4 flex-shrink-0 border-t border-slate-100">
+                                <button
+                                    disabled={regLoading || updateLoading}
+                                    onClick={handleSubmit}
+                                    type="button"
+                                    className="w-full bg-slate-900 text-white font-black py-5 rounded-[2rem] shadow-xl active:scale-95 transition-all uppercase tracking-widest text-xs"
+                                >
                                     {isEditing ? (updateLoading ? 'Updating...' : 'Save Changes') : (regLoading ? 'Processing...' : 'Complete Registration')}
                                 </button>
-                                {isEditing && <button onClick={resetForm} type="button" className="w-full mt-2 text-slate-400 font-black text-[10px] uppercase tracking-widest">Cancel Edit</button>}
-                            </form>
+                                {isEditing && (
+                                    <button onClick={resetForm} type="button" className="w-full mt-2 text-slate-400 font-black text-[10px] uppercase tracking-widest">
+                                        Cancel Edit
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     {/* --- Right: Staff Directory --- */}
-                    <div className="lg:col-span-8 space-y-6">
-                        <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
-                            <div className="flex justify-between items-center mb-8">
+                    <div className="lg:col-span-8 h-full overflow-hidden">
+                        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm h-full flex flex-col overflow-hidden">
+                            <div className="flex justify-between items-center mb-6 flex-shrink-0">
                                 <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Active Support Staff</h3>
                                 <div className="bg-emerald-50 text-emerald-600 px-4 py-1 rounded-full text-[10px] font-black uppercase">Verified Staff</div>
                             </div>
 
-                            <div className="overflow-x-auto">
+                            {/* FIX 3: Table scroll area — only this div scrolls */}
+                            <div className="flex-1 overflow-y-auto overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead>
+                                    <thead className="sticky top-0 bg-white z-10">
                                         <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                                             <th className="pb-4">Staff Member</th>
                                             <th className="pb-4">Designation</th>
@@ -194,16 +228,16 @@ const StaffManagement = () => {
                                     <tbody className="divide-y divide-slate-50">
                                         {queryLoading ? (
                                             <tr><td colSpan={3} className="text-center py-10 text-slate-400 font-bold text-xs">LOADING...</td></tr>
-                                        ) : data?.getAllStaff.map((staff: any) => (
+                                        ) : currentStaff.map((staff: any) => (
                                             <tr key={staff.id} onClick={() => setViewingStaff(staff)} className="hover:bg-blue-50/30 transition cursor-pointer group">
-                                                <td className="py-6">
+                                                <td className="py-5">
                                                     <p className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">{staff.firstName} {staff.lastName}</p>
                                                     <p className="text-[10px] text-slate-400">{staff.user?.email}</p>
                                                 </td>
-                                                <td className="py-6">
+                                                <td className="py-5">
                                                     <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase">{staff.designation}</span>
                                                 </td>
-                                                <td className="py-6 text-right">
+                                                <td className="py-5 text-right">
                                                     <button onClick={(e) => handleEditInitiate(staff, e)} className="bg-slate-900 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase hover:bg-blue-600 transition-all shadow-md">Edit</button>
                                                 </td>
                                             </tr>
@@ -211,8 +245,32 @@ const StaffManagement = () => {
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Pagination — pinned at bottom */}
+                            <div className="flex justify-between items-center pt-4 border-t border-slate-100 flex-shrink-0 mt-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Page {currentPage} of {totalPages || 1}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentPage(prev => prev - 1)}
+                                        className="px-4 py-2 bg-white border border-slate-200 rounded-xl font-bold text-[10px] uppercase disabled:opacity-30 transition-all hover:bg-slate-50"
+                                    >
+                                        Prev
+                                    </button>
+                                    <button
+                                        disabled={currentPage === totalPages || totalPages === 0}
+                                        onClick={() => setCurrentPage(prev => prev + 1)}
+                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase disabled:opacity-30 transition-all hover:bg-blue-600 shadow-md"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

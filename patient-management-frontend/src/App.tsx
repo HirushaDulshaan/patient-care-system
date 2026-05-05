@@ -36,6 +36,7 @@ import PatientConsultation from "./pages/Doctor/PatientConsultation";
 import NewMedicalRecord from "./pages/Doctor/NewMedicalRecord";
 import BookAppointment from "./pages/BookAppointment";
 import SpecialistDirectory from "./pages/SpecialistDirectory";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/specialists" element={<SpecialistDirectory />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
 
 
 

@@ -50,13 +50,53 @@ model Doctor {
   id             String   @id @default(uuid())
   userId         String   @unique
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName      String   // Doctor ගේ නම මෙතනටම ගනිමු
+
+  firstName      String
   lastName       String
-  specialization String
+  // 2. පැරණි specialization String එක වෙනුවට Category එකට link කරමු
+  categoryId     String
+  category       DoctorCategory @relation(fields: [categoryId], references: [id])
   licenseNumber  String   @unique
   phone          String?
+
+  // Address Info
+  address1       String?
+  address2       String?
+  city           String?
+
+  // Professional & Education Info
+  education      String    // MBBS, MD, etc.
+  university     String?   // Graduated University
+  workingHospital String?  // Currently working hospital
+
   appointments   Appointment[]
+  schedules       DoctorSchedule[] // දොස්තරගේ වැඩ කරන දින දර්ශනය
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
+
+model DoctorSchedule {
+  id          String   @id @default(uuid())
+  doctorId    String
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  workingDate DateTime // වැඩ කරන දිනය
+  startTime   String   // උදා: "08:00 AM"
+  endTime     String   // උදා: "12:00 PM"
+  status      String   @default("Available") // Available, Not Available (Leave)
+  maxPatients Int      @default(20) // දොස්තර බලන උපරිම රෝගීන් ගණන
+  bookedCount Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DoctorCategory {
+  id      String   @id @default(uuid())
+  name    String   @unique // උදා: Cardiologist, Dentist, Neurologist
+  doctors Doctor[] // මෙම category එකට අදාළ වන දොස්තරලා ලැයිස්තුව
+}
+
 
 model Patient {
   id        String   @id @default(uuid())

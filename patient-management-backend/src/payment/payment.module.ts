@@ -1,0 +1,10 @@
+// src/modules/payment/payment.module.ts
+import { Module } from '@nestjs/common';
+import { PaymentService } from './payment.service';
+import { PaymentResolver } from './payment.resolver';
+
+@Module({
+  providers: [PaymentService, PaymentResolver],
+  exports: [PaymentService],
+})
+export class PaymentModule {}
