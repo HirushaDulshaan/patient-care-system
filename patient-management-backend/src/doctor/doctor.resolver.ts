@@ -8,14 +8,13 @@ import { GqlAuthGuard } from '../auth/gql-auth.guard'; // ඔයා කලින
 export class DoctorResolver {
   constructor(private doctorService: DoctorService) {}
 
-  // දොස්තර කෙනෙක්ව Register කිරීම
   @Mutation(() => DoctorType)
   @UseGuards(GqlAuthGuard)
   async registerDoctor(
     @Args('email') email: string,
     @Args('firstName') firstName: string,
     @Args('lastName') lastName: string,
-    @Args('categoryId') categoryId: string, // specialization වෙනුවට categoryId
+    @Args('categoryId') categoryId: string,
     @Args('licenseNumber') licenseNumber: string,
     @Args('phone', { nullable: true }) phone: string,
     @Args('address1', { nullable: true }) address1: string,
@@ -41,22 +40,29 @@ export class DoctorResolver {
     });
   }
 
-  // සියලුම දොස්තරලාගේ ලැයිස්තුව ගැනීම
+  // ✅ Super Admin හට Password එක සෙට් කිරීමට ඇති Mutation එක
+  @Mutation(() => String)
+  @UseGuards(GqlAuthGuard)
+  async approveDoctorAccess(
+    @Args('userId') userId: string,
+    @Args('password') password: string,
+  ) {
+    await this.doctorService.approveDoctorAccess(userId, password);
+    return 'Doctor access granted successfully! ✅';
+  }
+
   @Query(() => [DoctorType])
   async getAllDoctors() {
     return this.doctorService.getAllDoctors();
   }
 
-  // doctor.resolver.ts
-
   @Mutation(() => Boolean)
-  @UseGuards(GqlAuthGuard) // Update එක සාර්ථක නම් true එවන නිසා
+  @UseGuards(GqlAuthGuard)
   async updateDoctor(
     @Args('id') id: string,
     @Args('firstName') firstName: string,
     @Args('lastName') lastName: string,
-    @Args('categoryId') categoryId: string, // specialization වෙනුවට categoryId
-
+    @Args('categoryId') categoryId: string,
     @Args('phone', { nullable: true }) phone: string,
     @Args('address1', { nullable: true }) address1: string,
     @Args('address2', { nullable: true }) address2: string,
@@ -69,7 +75,6 @@ export class DoctorResolver {
       firstName,
       lastName,
       categoryId,
-
       phone,
       address1,
       address2,

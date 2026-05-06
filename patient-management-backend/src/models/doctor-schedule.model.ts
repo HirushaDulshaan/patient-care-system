@@ -27,8 +27,6 @@ export class DoctorScheduleType {
   bookedCount: number;
 
   // 🔥 remainingSeats අගය auto-calculate වෙන විදිහට හදමු
-  @Field(() => Int)
-  remainingSeats(@Parent() schedule: any): number {
-    return schedule.maxPatients - schedule.bookedCount;
-  }
+  @Field(() => Int, { nullable: true }) // 👈 null වෙන්න පුළුවන් බව කියන්න
+  remainingSeats: number;
 }

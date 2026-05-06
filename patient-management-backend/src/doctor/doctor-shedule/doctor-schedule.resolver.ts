@@ -37,4 +37,12 @@ export class DoctorScheduleResolver {
   ) {
     return this.scheduleService.updateDoctorRoster(doctorId, slots);
   }
+
+  // ✅ 2. අලුත් Query එක (Admin Roster පේජ් එක සඳහා - DoctorId එකෙන් දත්ත ගන්නේ)
+  @Query(() => [DoctorScheduleType])
+  @UseGuards(GqlAuthGuard) // ආරක්ෂාව සඳහා Guard එක දාන්න
+  async getDoctorSchedulesForAdmin(@Args('doctorId') doctorId: string) {
+    // සර්විස් එකේ අපි හදපු අලුත් ෆන්ක්ෂන් එකට කතා කරනවා
+    return this.scheduleService.getSchedulesByDoctorId(doctorId);
+  }
 }

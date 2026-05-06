@@ -10,4 +10,7 @@ export class User {
 
   @Field()
   role: string;
+
+  @Field()
+  isActive: boolean; // 👈 මේක තියෙනවාද බලන්න. නැත්නම් UI එකට දත්ත එන්නේ නැහැ.
 }

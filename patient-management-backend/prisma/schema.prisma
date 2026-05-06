@@ -22,12 +22,12 @@ model User {
   id            String   @id @default(uuid())
   email         String   @unique
   role          Role     @default(PATIENT)
-  password      String?
+  password  String?  // Password එක මුලින්ම නැති නිසා optional කරන්න
+  isActive  Boolean  @default(false) // 👈 මේක අනිවාර්යයි
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   // Relationships - එක් User කෙනෙකුට තිබිය හැක්කේ එක Profile එකක් පමණි
-  patientProfile Patient?
   doctorProfile  Doctor?
   staffProfile   StaffProfile?
 }
@@ -100,8 +100,6 @@ model DoctorCategory {
 
 model Patient {
   id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   fullName  String
   phone     String?
   nic       String   @unique
@@ -117,4 +115,46 @@ model Appointment {
   scheduledAt DateTime
   status      String   @default("PENDING")
   priority    Int      @default(1)
+
+  medicalRecords MedicalRecord[]
+}
+
+model MedicalRecord {
+  id              String         @id @default(uuid())
+  appointmentId   String         @unique // එක appointment එකකට තියෙන්නේ එක record එකයි
+  appointment     Appointment    @relation(fields: [appointmentId], references: [id])
+
+  patientName     String
+  guardianName    String?        // දරුවෙක් නම් දෙමාපියන්ගේ නම
+  age             String
+  weight          String?
+
+  complaint       String         // රෝග ලක්ෂණ
+  diagnosis       String         // දොස්තරගේ නිගමනය
+  specialAdvice   String?        // විශේෂ උපදෙස්
+  nextVisitDate   DateTime?      // ඊළඟට එන්න ඕනේ දවස
+
+  prescriptions   Prescription[] // ලබාදෙන බෙහෙත් ලැයිස්තුව
+  createdAt       DateTime       @default(now())
+}
+
+model Prescription {
+  id              String        @id @default(uuid())
+  medicalRecordId String
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id])
+
+  drugName        String
+  dosage          String
+  frequency       String        // OD/BD/TDS
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userEmail String?
+  action    String   // LOGIN, LOGOUT, CREATE_DOCTOR, etc.
+  type      String   // INFO, CRITICAL
+  target    String?  // කොහේ action කළාද
+  status    String   // Success, Failed
+  ipAddress String?
+  createdAt DateTime @default(now())
 }

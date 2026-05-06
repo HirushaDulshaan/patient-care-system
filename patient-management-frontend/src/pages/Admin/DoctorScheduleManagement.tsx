@@ -16,8 +16,8 @@ const GET_ALL_DOCTORS = gql`
 `;
 
 const GET_DOCTOR_SCHEDULES = gql`
-  query GetDoctorSchedules($doctorId: String!) {
-    getDoctorSchedules(doctorId: $doctorId) {
+  query GetDoctorSchedulesForAdmin($doctorId: String!) {
+    getDoctorSchedulesForAdmin(doctorId: $doctorId) {
       id
       workingDate
       startTime

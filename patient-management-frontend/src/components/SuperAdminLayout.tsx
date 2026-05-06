@@ -21,7 +21,7 @@ const SuperAdminLayout = () => {
   const menuItems = [
     { name: 'Insights Overview', path: '/superadmin/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'Staff Management', path: '/superadmin/staff', icon: <Users size={20} /> },
-    { name: 'Doctor Specialist', path: '/superadmin/doctors', icon: <Stethoscope size={20} /> },
+    { name: 'Doctor Specialist', path: '/superadmin/SpecialistManagement', icon: <Stethoscope size={20} /> },
     { name: 'Doctor Roster', path: '/superadmin/insights', icon: <CalendarClock size={20} /> },
     { name: 'Security Audit Logs', path: '/superadmin/logs', icon: <ShieldCheck size={20} /> },
     { name: 'Financial Reports', path: '/superadmin/financials', icon: <BarChart3 size={20} /> },

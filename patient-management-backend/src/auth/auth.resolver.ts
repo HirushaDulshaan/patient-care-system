@@ -1,3 +1,5 @@
+// src/auth/auth.resolver.ts
+
 import {
   Resolver,
   Mutation,
@@ -6,14 +8,15 @@ import {
   ObjectType,
   Field,
   registerEnumType,
+  Context,
 } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { User } from '../models/user.model';
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from './gql-auth.guard';
 import { Role } from '@prisma/client';
+import { CurrentUser } from './current-user.decorator';
 
-// Role Enum එක GraphQL වලට හඳුන්වා දීම
 registerEnumType(Role, {
   name: 'Role',
 });
@@ -31,18 +34,12 @@ class LoginResponse {
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
-  /**
-   * Security Guard එක වැඩද කියලා බලන්න පොඩි Query එකක්
-   */
   @Query(() => String)
   @UseGuards(GqlAuthGuard)
   sayHello(): string {
     return 'Security Guard passed! You are authorized!';
   }
 
-  /**
-   * 1. මූලික ලියාපදිංචිය (Admin/Super Admin සඳහා)
-   */
   @Mutation(() => String)
   async register(
     @Args('email') email: string,
@@ -53,19 +50,31 @@ export class AuthResolver {
     return `User created successfully with ID: ${user.id}`;
   }
 
-  /**
-   * 2. Login කිරීම
-   * මෙහිදී User ගේ email/password නිවැරදි නම් JWT token එකක් ලබාදෙයි.
-   */
   @Mutation(() => LoginResponse)
   async login(
     @Args('email') email: string,
     @Args('password') password: string,
+    @Context() context: any,
   ) {
-    const user = await this.authService.validateUser(email, password);
+    // IP address ලබා ගැනීම
+    const ip =
+      context.req?.headers['x-forwarded-for'] || context.req?.ip || 'Unknown';
+
+    const user = await this.authService.validateUser(email, password, ip);
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.authService.login(user);
+
+    return this.authService.login(user, ip);
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(GqlAuthGuard)
+  async logout(@CurrentUser() user: any, @Context() context: any) {
+    const ip =
+      context.req?.headers['x-forwarded-for'] || context.req?.ip || 'Unknown';
+
+    return this.authService.logout(user.email, ip);
   }
 }

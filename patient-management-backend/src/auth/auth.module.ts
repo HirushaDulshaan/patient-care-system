@@ -3,7 +3,8 @@ import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver'; // Meka provider ekak widihata thiyenna ona
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './jwt.strategy'; // Meka import karanna
+import { JwtStrategy } from './jwt.strategy';
+import { AuditService } from '../audit/audit.service'; // Meka import karanna
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { JwtStrategy } from './jwt.strategy'; // Meka import karanna
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [AuthService, AuthResolver, JwtStrategy],
+  providers: [AuthService, AuthResolver, JwtStrategy, AuditService],
   // controllers: [AuthController] // (Oyalage controller ekak thiyenawa nam meka athi)
 })
 export class AuthModule {}

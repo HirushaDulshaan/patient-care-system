@@ -6,6 +6,7 @@ type User {
   id: ID!
   email: String!
   role: String!
+  isActive: Boolean!
 }
 
 type LoginResponse {
@@ -27,7 +28,7 @@ type DoctorScheduleType {
   status: String!
   maxPatients: Int!
   bookedCount: Int!
-  remainingSeats: Int!
+  remainingSeats: Int
 }
 
 """
@@ -66,13 +67,89 @@ type StaffProfileType {
   createdAt: DateTime!
 }
 
+type PrescriptionType {
+  id: ID!
+  drugName: String!
+  dosage: String!
+  frequency: String!
+}
+
+type MedicalRecordType {
+  id: ID!
+  appointmentId: String!
+  appointment: AppointmentType
+  patientName: String!
+  guardianName: String
+  age: String!
+  weight: String
+  complaint: String!
+  diagnosis: String!
+  specialAdvice: String
+  nextVisitDate: DateTime
+  prescriptions: [PrescriptionType!]
+  createdAt: DateTime!
+}
+
+type PatientType {
+  id: ID!
+  fullName: String!
+  phone: String
+  nic: String!
+  medicalRecords: [MedicalRecordType!]
+}
+
 type AppointmentType {
   id: ID!
   patientId: String!
   doctorId: String!
   scheduledAt: DateTime!
   status: String!
-  doctor: DoctorType
+  priority: Int!
+  medicalRecords: [MedicalRecordType!]
+  patient: PatientType
+}
+
+type DoctorDashboardStats {
+  monthlyCount: Float!
+  totalPatients: Float!
+  monthlyIncome: Float!
+  firstName: String!
+  lastName: String!
+}
+
+type DoctorInsightType {
+  id: String!
+  firstName: String!
+  lastName: String!
+  specialization: String
+  appointments: [AppointmentType!]!
+}
+
+type RecentTransaction {
+  id: String!
+  patientName: String!
+  source: String!
+  amount: Float!
+  status: String!
+}
+
+type FinancialStats {
+  totalRevenue: Float!
+  totalExpenses: Float!
+  netProfit: Float!
+  totalCompleted: Int!
+  recentTransactions: [RecentTransaction!]!
+}
+
+type AuditLogType {
+  id: ID!
+  userEmail: String
+  action: String!
+  type: String!
+  ipAddress: String
+  target: String
+  status: String!
+  createdAt: DateTime!
 }
 
 type Query {
@@ -80,20 +157,33 @@ type Query {
   getAllStaff: [StaffProfileType!]!
   getAllDoctors: [DoctorType!]!
   getDoctorSchedules(doctorId: String!): [DoctorScheduleType!]!
+  getDoctorSchedulesForAdmin(doctorId: String!): [DoctorScheduleType!]!
   getAllDoctorCategories: [DoctorCategoryType!]!
+  getPendingConsultations(userId: String!): [AppointmentType!]!
+  getPatientHistory(patientId: String!): [MedicalRecordType!]!
+  getPatientByNIC(nic: String!): PatientType
+  getDoctorDashboardStats(userId: String!): DoctorDashboardStats!
+  getAllDoctorInsights(date: String!): [DoctorInsightType!]!
   getAppointmentsByDoctor(doctorId: String!): [AppointmentType!]!
+  getSecurityLogs: [AuditLogType!]!
+  getFinancialReports(type: String!): FinancialStats!
 }
 
 type Mutation {
   register(email: String!, password: String!, role: Role!): String!
   login(email: String!, password: String!): LoginResponse!
+  logout: Boolean!
   registerStaff(email: String!, role: Role!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
+  approveStaffAccess(userId: String!, password: String!): String!
+  toggleStaffStatus(userId: String!, status: Boolean!): StaffProfileType!
   updateStaff(id: String!, firstName: String!, lastName: String!, phone: String!, designation: String!, city: String!, address1: String, address2: String): String!
   registerDoctor(email: String!, firstName: String!, lastName: String!, categoryId: String!, licenseNumber: String!, phone: String, address1: String, address2: String, city: String, education: String!, university: String, workingHospital: String): DoctorType!
+  approveDoctorAccess(userId: String!, password: String!): String!
   updateDoctor(id: String!, firstName: String!, lastName: String!, categoryId: String!, phone: String, address1: String, address2: String, city: String, education: String!, university: String, workingHospital: String): Boolean!
   updateDoctorRoster(doctorId: String!, slots: [ScheduleSlotInput!]!): Boolean!
   createDoctorCategory(name: String!): DoctorCategoryType!
   getStripeSessionUrl(doctorId: String!, doctorName: String!, patientName: String!, nic: String!, phone: String!, scheduledAt: String!): String!
+  saveMedicalRecord(appointmentId: String!, patientName: String!, age: String!, complaint: String!, diagnosis: String!, medicines: [MedicineInput!]!, weight: String, guardianName: String, specialAdvice: String, nextVisitDate: String): Boolean!
   createAppointment(patientData: PatientInput!, doctorId: String!, scheduledAt: String!): AppointmentType!
 }
 
@@ -111,6 +201,12 @@ input ScheduleSlotInput {
   startTime: String!
   endTime: String!
   status: String!
+}
+
+input MedicineInput {
+  name: String!
+  dosage: String!
+  frequency: String!
 }
 
 input PatientInput {

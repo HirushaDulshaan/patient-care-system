@@ -8,7 +8,9 @@ type LoginMutationData = {
   login: {
     access_token: string;
     user: {
+      id: string; // 👈 මේක අලුතින් එකතු කරන්න
       role: string;
+      email: string; // 👈 අවශ්‍ය නම් මේකත් ගන්න පුළුවන්
     };
   };
 };
@@ -23,6 +25,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // 2. Login Mutation එක සෙට් කිරීම
   const [login, { loading }] = useMutation<LoginMutationData, LoginMutationVariables>(LOGIN_MUTATION);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,35 +34,37 @@ const Login = () => {
       const response = await login({ variables: { email, password } });
 
       if (response.data) {
-        const token = response.data.login.access_token;
-        const role = response.data.login.user.role;
+        const { access_token, user } = response.data.login;
 
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
+        // 3. ආරක්ෂිතව දත්ත localStorage වල සේව් කිරීම
+        localStorage.setItem('token', access_token);
+        localStorage.setItem('role', user.role);
+        localStorage.setItem('userId', user.id); // 👈 Super Admin Audit සඳහා වැදගත් වේ
 
-        // Role එක අනුව අදාළ Dashboard එකට යවනවා
-        switch (role) {
+        // 4. Role එක අනුව අදාළ Dashboard එකට Redirect කිරීම
+        switch (user.role) {
           case 'SUPER_ADMIN':
-            navigate('/superadmin/dashboard');
+            navigate('/superadmin/dashboard', { replace: true });
             break;
           case 'ADMIN':
-            navigate('/admin/dashboard');
+            navigate('/admin/dashboard', { replace: true });
             break;
           case 'DOCTOR':
-            navigate('/doctor/dashboard');
+            navigate('/doctor/dashboard', { replace: true });
             break;
           case 'RECEPTIONIST':
-            navigate('/reception/register'); // Register page ekata yawamu direct
+            navigate('/reception/register', { replace: true });
             break;
           case 'STAFF':
-            navigate('/staff/dashboard');
+            navigate('/staff/dashboard', { replace: true });
             break;
           default:
-            navigate('/'); // Patient nam home page ekata
+            navigate('/', { replace: true });
         }
       }
     } catch (err) {
       console.error('Login error:', err);
+      // මෙතනදී UI එකේ error message එකක් පෙන්වන්න පුළුවන්
     }
   };
 
