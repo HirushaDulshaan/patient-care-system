@@ -1,4 +1,3 @@
-// src/modules/payment/payment.resolver.ts
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { PaymentService } from './payment.service';
 

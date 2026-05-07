@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { User } from './user.model'; // Oyage User model eka thiyena thana path eka danna
+import { User } from './user.model';
 
 @ObjectType()
 export class StaffProfileType {
@@ -27,7 +27,7 @@ export class StaffProfileType {
   @Field({ nullable: true })
   address2: string;
 
-  @Field(() => User) // User details ganna (email etc.)
+  @Field(() => User)
   user: User;
 
   @Field()

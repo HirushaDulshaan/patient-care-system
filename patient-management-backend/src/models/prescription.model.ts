@@ -1,4 +1,3 @@
-// src/models/prescription.model.ts
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 @ObjectType()

@@ -9,12 +9,11 @@ export class ApoimentService {
     patientData: any,
     doctorId: string,
     scheduledAt: string,
+    paymentStatus: string = 'NOT_PAID',
   ) {
     const appointmentDate = new Date(scheduledAt);
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. රෝගියා ඉන්නවාද බලා (Upsert) රෝගියාගේ ID එක ගනිමු
-      // ✅ මෙහිදී User table එකට කිසිදු සම්බන්ධයක් නැත
       const patient = await tx.patient.upsert({
         where: { nic: patientData.nic },
         update: {
@@ -25,11 +24,9 @@ export class ApoimentService {
           fullName: patientData.fullName,
           nic: patientData.nic,
           phone: patientData.phone,
-          // ❌ 'user' create කරන කොටස ඉවත් කරන ලදී
         },
       });
 
-      // 2. අදාළ දොස්තරට ඒ දවසේ Schedule එකක් තිබේදැයි බලමු
       const startOfDay = new Date(appointmentDate);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(appointmentDate);
@@ -47,17 +44,16 @@ export class ApoimentService {
 
       if (!schedule) {
         throw new BadRequestException(
-          'දොස්තරට අදාළ දිනට ශෙඩියුල් එකක් සොයාගත නොහැක.',
+          'cant fine shedule',
         );
       }
 
       if (schedule.bookedCount >= schedule.maxPatients) {
         throw new BadRequestException(
-          'මෙම දොස්තරගේ අදාළ සෙෂන් එක සම්පූර්ණයෙන්ම පිරී ඇත.',
+          'this session is already booked.',
         );
       }
 
-      // 3. දොස්තරගේ ශෙඩියුල් එකේ bookedCount එක 1කින් වැඩි කරමු
       await tx.doctorSchedule.update({
         where: { id: schedule.id },
         data: {
@@ -65,13 +61,13 @@ export class ApoimentService {
         },
       });
 
-      // 4. අවසානයේ ඇපොයින්ට්මන්ට් එක සේව් කරමු
       return tx.appointment.create({
         data: {
           patientId: patient.id,
           doctorId: doctorId,
           scheduledAt: appointmentDate,
           status: 'PENDING',
+          paymentStatus: 'PAID',
         },
         include: {
           patient: true,

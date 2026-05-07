@@ -1,4 +1,3 @@
-// src/medical-record/medical-record.service.ts
 
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -68,7 +67,6 @@ export class MedicalRecordService {
   }
 
   async getPendingAppointmentsForDoctor(userIdFromFrontend: string) {
-    // Today's date range (midnight to midnight)
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
@@ -82,7 +80,7 @@ export class MedicalRecordService {
         },
         status: 'PENDING',
         scheduledAt: {
-          gte: todayStart, // 👈 today's appointments only
+          gte: todayStart,
           lte: todayEnd,
         },
       },
@@ -99,18 +97,18 @@ export class MedicalRecordService {
     return this.prisma.medicalRecord.findMany({
       where: {
         appointment: {
-          patientId: patientId, // රෝගියාගේ ID එක අනුව Filter කරයි
+          patientId: patientId,
         },
       },
       include: {
-        prescriptions: true, // බෙහෙත් ලැයිස්තුවත් එක්කම ගන්නවා
+        prescriptions: true,
         appointment: {
           include: {
-            doctor: true, // බෙහෙත් දුන්න දොස්තරගේ විස්තර
+            doctor: true,
           },
         },
       },
-      orderBy: { createdAt: 'desc' }, // අලුත්ම වාර්තා උඩට එන්න
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -131,7 +129,6 @@ export class MedicalRecordService {
 
     if (!patient) return null;
 
-    // MedicalRecords flatten කරලා patient object එකට add කරනවා
     const medicalRecords = patient.appointments.flatMap(
       (app) => app.medicalRecords,
     );
@@ -144,14 +141,12 @@ export class MedicalRecordService {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    // 1. දොස්තරගේ නම සොයාගැනීම
     const doctor = await this.prisma.doctor.findUnique({
       where: { userId: userId },
     });
 
-    if (!doctor) throw new BadRequestException('දොස්තර විස්තර සොයාගත නොහැක.');
+    if (!doctor) throw new BadRequestException('cant find doctor details');
 
-    // 2. මාසික ඇපොයින්ට්මන්ට් ගණන
     const monthlyCount = await this.prisma.appointment.count({
       where: {
         doctor: { userId: userId },
@@ -163,17 +158,15 @@ export class MedicalRecordService {
     const totalPatients = await this.prisma.patient.count();
 
     return {
-      firstName: doctor.firstName, // 👈 DB එකෙන් එන නම
-      lastName: doctor.lastName, // 👈 DB එකෙන් එන නම
+      firstName: doctor.firstName,
+      lastName: doctor.lastName,
       monthlyCount,
       totalPatients,
       monthlyIncome: monthlyCount * 2000,
     };
   }
 
-  // medical-record.service.ts
 
-  // medical-record.service.ts
 
   async getSuperAdminInsights(date: string) {
     const selectedDate = new Date(date);
@@ -182,7 +175,7 @@ export class MedicalRecordService {
 
     const doctors = await this.prisma.doctor.findMany({
       include: {
-        category: true, // 👈 Category එක අනිවාර්යයෙන්ම include කරන්න
+        category: true,
         appointments: {
           where: {
             scheduledAt: { gte: start, lte: end },
@@ -196,7 +189,6 @@ export class MedicalRecordService {
       },
     });
 
-    // GraphQL එකට ගැලපෙන විදිහට specialization field එක map කරමු
     return doctors.map((doc) => ({
       ...doc,
       specialization: doc.category?.name || 'General',

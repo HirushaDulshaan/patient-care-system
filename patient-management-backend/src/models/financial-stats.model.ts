@@ -1,4 +1,3 @@
-// src/finance/models/financial-stats.model.ts
 import { ObjectType, Field, Float, Int } from '@nestjs/graphql';
 
 @ObjectType()

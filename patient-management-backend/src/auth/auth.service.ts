@@ -1,4 +1,3 @@
-// src/auth/auth.service.ts
 
 import {
   BadRequestException,
@@ -42,7 +41,6 @@ export class AuthService {
       },
     });
 
-    // User නැත හෝ password වැරදියි
     if (
       !user ||
       !user.password ||
@@ -59,7 +57,6 @@ export class AuthService {
       return null;
     }
 
-    // User active නැත
     if (!user.isActive) {
       await this.auditService.createLog({
         userEmail: email,
@@ -70,7 +67,7 @@ export class AuthService {
         ipAddress: ipAddress ?? 'Unknown',
       });
       throw new UnauthorizedException(
-        'ඔබේ ගිණුම තවමත් Super Admin විසින් අනුමත කර නොමැත.',
+        'Not Approved by administrator',
       );
     }
 

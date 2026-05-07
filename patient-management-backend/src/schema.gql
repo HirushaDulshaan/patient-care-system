@@ -104,9 +104,11 @@ type AppointmentType {
   doctorId: String!
   scheduledAt: DateTime!
   status: String!
+  paymentStatus: String!
   priority: Int!
   medicalRecords: [MedicalRecordType!]
   patient: PatientType
+  doctor: DoctorType
 }
 
 type DoctorDashboardStats {
@@ -152,6 +154,32 @@ type AuditLogType {
   createdAt: DateTime!
 }
 
+type AdminSystemStats {
+  totalDoctors: Int!
+  totalStaff: Int!
+  todayAppointments: Int!
+  activeNow: Int!
+}
+
+type PatientListResponse {
+  patients: [PatientType!]!
+  totalCount: Float!
+  hasMore: Boolean!
+}
+
+type BillingRecord {
+  id: String!
+  patientName: String!
+  nic: String!
+  doctorName: String!
+  category: String!
+  consultationFee: Float!
+  hospitalFee: Float!
+  total: Float!
+  status: String!
+  paymentStatus: String!
+}
+
 type Query {
   sayHello: String!
   getAllStaff: [StaffProfileType!]!
@@ -166,6 +194,9 @@ type Query {
   getAllDoctorInsights(date: String!): [DoctorInsightType!]!
   getAppointmentsByDoctor(doctorId: String!): [AppointmentType!]!
   getSecurityLogs: [AuditLogType!]!
+  getAdminSystemStats: AdminSystemStats!
+  getRecentPatients(page: Float! = 1, limit: Float! = 10): PatientListResponse!
+  getAppointmentForBilling(searchValue: String!): BillingRecord!
   getFinancialReports(type: String!): FinancialStats!
 }
 
@@ -184,7 +215,8 @@ type Mutation {
   createDoctorCategory(name: String!): DoctorCategoryType!
   getStripeSessionUrl(doctorId: String!, doctorName: String!, patientName: String!, nic: String!, phone: String!, scheduledAt: String!): String!
   saveMedicalRecord(appointmentId: String!, patientName: String!, age: String!, complaint: String!, diagnosis: String!, medicines: [MedicineInput!]!, weight: String, guardianName: String, specialAdvice: String, nextVisitDate: String): Boolean!
-  createAppointment(patientData: PatientInput!, doctorId: String!, scheduledAt: String!): AppointmentType!
+  createAppointment(patientData: PatientInput!, doctorId: String!, scheduledAt: String!, paymentStatus: String! = "NOT_PAID"): AppointmentType!
+  settlePayment(id: String!): Boolean!
 }
 
 enum Role {

@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { AppointmentType } from './appointment.model'; // Appointment එක import කරන්න
+import { AppointmentType } from './appointment.model';
 
 @ObjectType()
 export class PrescriptionType {

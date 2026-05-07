@@ -3,14 +3,15 @@ import { useMutation } from '@apollo/client/react';
 import { useNavigate } from 'react-router-dom';
 import { LOGIN_MUTATION } from '../graphql/mutations';
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 type LoginMutationData = {
   login: {
     access_token: string;
     user: {
-      id: string; // 👈 මේක අලුතින් එකතු කරන්න
+      id: string; 
       role: string;
-      email: string; // 👈 අවශ්‍ය නම් මේකත් ගන්න පුළුවන්
+      email: string; 
     };
   };
 };
@@ -25,7 +26,6 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  // 2. Login Mutation එක සෙට් කිරීම
   const [login, { loading }] = useMutation<LoginMutationData, LoginMutationVariables>(LOGIN_MUTATION);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,12 +36,11 @@ const Login = () => {
       if (response.data) {
         const { access_token, user } = response.data.login;
 
-        // 3. ආරක්ෂිතව දත්ත localStorage වල සේව් කිරීම
         localStorage.setItem('token', access_token);
         localStorage.setItem('role', user.role);
-        localStorage.setItem('userId', user.id); // 👈 Super Admin Audit සඳහා වැදගත් වේ
+        localStorage.setItem('userId', user.id); 
 
-        // 4. Role එක අනුව අදාළ Dashboard එකට Redirect කිරීම
+        
         switch (user.role) {
           case 'SUPER_ADMIN':
             navigate('/superadmin/dashboard', { replace: true });
@@ -64,7 +63,9 @@ const Login = () => {
       }
     } catch (err) {
       console.error('Login error:', err);
-      // මෙතනදී UI එකේ error message එකක් පෙන්වන්න පුළුවන්
+      toast.error('Login failed. Please check your credentials and try again.', {
+        duration: 5000,
+      });
     }
   };
 

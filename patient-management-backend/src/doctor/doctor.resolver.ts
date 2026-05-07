@@ -2,7 +2,7 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { DoctorService } from './doctor.service';
 import { DoctorType } from '../models/doctor.model';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '../auth/gql-auth.guard'; // ඔයා කලින් හදපු Guard එක
+import { GqlAuthGuard } from '../auth/gql-auth.guard';
 
 @Resolver()
 export class DoctorResolver {
@@ -40,7 +40,6 @@ export class DoctorResolver {
     });
   }
 
-  // ✅ Super Admin හට Password එක සෙට් කිරීමට ඇති Mutation එක
   @Mutation(() => String)
   @UseGuards(GqlAuthGuard)
   async approveDoctorAccess(

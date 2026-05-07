@@ -26,7 +26,6 @@ export class DoctorScheduleType {
   @Field(() => Int)
   bookedCount: number;
 
-  // 🔥 remainingSeats අගය auto-calculate වෙන විදිහට හදමු
-  @Field(() => Int, { nullable: true }) // 👈 null වෙන්න පුළුවන් බව කියන්න
+  @Field(() => Int, { nullable: true })
   remainingSeats: number;
 }

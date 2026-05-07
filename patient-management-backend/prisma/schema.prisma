@@ -6,7 +6,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url eka methana naha, eka config eke thiyenawa (Kalin haduwa wage)
 }
 
 enum Role {
@@ -22,12 +21,12 @@ model User {
   id            String   @id @default(uuid())
   email         String   @unique
   role          Role     @default(PATIENT)
-  password  String?  // Password එක මුලින්ම නැති නිසා optional කරන්න
-  isActive  Boolean  @default(false) // 👈 මේක අනිවාර්යයි
+  password  String?
+  isActive  Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // Relationships - එක් User කෙනෙකුට තිබිය හැක්කේ එක Profile එකක් පමණි
+
   doctorProfile  Doctor?
   staffProfile   StaffProfile?
 }
@@ -42,7 +41,7 @@ model StaffProfile {
   address1    String?
   address2    String?
   city        String?
-  designation String   // Nurse, Receptionist, Pharmacist ලෙස මෙතනට වැටේ
+  designation String
   createdAt   DateTime @default(now())
 }
 
@@ -53,24 +52,24 @@ model Doctor {
 
   firstName      String
   lastName       String
-  // 2. පැරණි specialization String එක වෙනුවට Category එකට link කරමු
+
   categoryId     String
   category       DoctorCategory @relation(fields: [categoryId], references: [id])
   licenseNumber  String   @unique
   phone          String?
 
-  // Address Info
+
   address1       String?
   address2       String?
   city           String?
 
-  // Professional & Education Info
-  education      String    // MBBS, MD, etc.
-  university     String?   // Graduated University
-  workingHospital String?  // Currently working hospital
+
+  education      String
+  university     String?
+  workingHospital String?
 
   appointments   Appointment[]
-  schedules       DoctorSchedule[] // දොස්තරගේ වැඩ කරන දින දර්ශනය
+  schedules       DoctorSchedule[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -80,11 +79,11 @@ model DoctorSchedule {
   doctorId    String
   doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-  workingDate DateTime // වැඩ කරන දිනය
-  startTime   String   // උදා: "08:00 AM"
-  endTime     String   // උදා: "12:00 PM"
-  status      String   @default("Available") // Available, Not Available (Leave)
-  maxPatients Int      @default(20) // දොස්තර බලන උපරිම රෝගීන් ගණන
+  workingDate DateTime
+  startTime   String
+  endTime     String
+  status      String   @default("Available")
+  maxPatients Int      @default(20)
   bookedCount Int      @default(0)
 
   createdAt   DateTime @default(now())
@@ -93,8 +92,8 @@ model DoctorSchedule {
 
 model DoctorCategory {
   id      String   @id @default(uuid())
-  name    String   @unique // උදා: Cardiologist, Dentist, Neurologist
-  doctors Doctor[] // මෙම category එකට අදාළ වන දොස්තරලා ලැයිස්තුව
+  name    String   @unique
+  doctors Doctor[]
 }
 
 
@@ -115,26 +114,27 @@ model Appointment {
   scheduledAt DateTime
   status      String   @default("PENDING")
   priority    Int      @default(1)
+  paymentStatus   String   @default("NOT_PAID")
 
   medicalRecords MedicalRecord[]
 }
 
 model MedicalRecord {
   id              String         @id @default(uuid())
-  appointmentId   String         @unique // එක appointment එකකට තියෙන්නේ එක record එකයි
+  appointmentId   String         @unique
   appointment     Appointment    @relation(fields: [appointmentId], references: [id])
 
   patientName     String
-  guardianName    String?        // දරුවෙක් නම් දෙමාපියන්ගේ නම
+  guardianName    String?
   age             String
   weight          String?
 
-  complaint       String         // රෝග ලක්ෂණ
-  diagnosis       String         // දොස්තරගේ නිගමනය
-  specialAdvice   String?        // විශේෂ උපදෙස්
-  nextVisitDate   DateTime?      // ඊළඟට එන්න ඕනේ දවස
+  complaint       String
+  diagnosis       String
+  specialAdvice   String?
+  nextVisitDate   DateTime?
 
-  prescriptions   Prescription[] // ලබාදෙන බෙහෙත් ලැයිස්තුව
+  prescriptions   Prescription[]
   createdAt       DateTime       @default(now())
 }
 
@@ -145,16 +145,16 @@ model Prescription {
 
   drugName        String
   dosage          String
-  frequency       String        // OD/BD/TDS
+  frequency       String
 }
 
 model AuditLog {
   id        String   @id @default(uuid())
   userEmail String?
-  action    String   // LOGIN, LOGOUT, CREATE_DOCTOR, etc.
-  type      String   // INFO, CRITICAL
-  target    String?  // කොහේ action කළාද
-  status    String   // Success, Failed
+  action    String
+  type      String
+  target    String?
+  status    String
   ipAddress String?
   createdAt DateTime @default(now())
 }

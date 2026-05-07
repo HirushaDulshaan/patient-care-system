@@ -12,9 +12,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // 3. Claims tika extract karaganna kalla (Verification)
   async validate(payload: any) {
-    // Meka run wenakota NestJS request ekata me details tika add karanawa
     return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

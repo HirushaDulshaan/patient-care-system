@@ -1,14 +1,13 @@
-// src/modules/payment/payment.service.ts
 import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 
 @Injectable()
 export class PaymentService {
-  private stripe: InstanceType<typeof Stripe>; // ✅ Fix 1: namespace used as type
+  private stripe: InstanceType<typeof Stripe>;
 
   constructor() {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2026-04-22.dahlia', // ✅ Fix 2: updated API version
+      apiVersion: '2026-04-22.dahlia',
     });
   }
 

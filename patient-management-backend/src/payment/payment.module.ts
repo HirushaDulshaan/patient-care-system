@@ -1,4 +1,3 @@
-// src/modules/payment/payment.module.ts
 import { Module } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentResolver } from './payment.resolver';

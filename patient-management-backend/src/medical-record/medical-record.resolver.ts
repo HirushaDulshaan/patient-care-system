@@ -1,4 +1,3 @@
-// src/medical-record/medical-record.resolver.ts
 
 import {
   Resolver,
@@ -14,9 +13,8 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from '../auth/gql-auth.guard';
 import { AppointmentType } from '../models/appointment.model';
 import { MedicalRecordType } from '../models/medical-record.model';
-import { PatientType } from '../models/patient.model'; // මේ වගේ එකක් තියෙන්න ඕනේ
+import { PatientType } from '../models/patient.model';
 
-// බෙහෙත් විස්තර සඳහා Input Type එකක් හදමු
 @InputType()
 class MedicineInput {
   @Field() name: string;
@@ -29,7 +27,7 @@ class DoctorDashboardStats {
   @Field() monthlyCount: number;
   @Field() totalPatients: number;
   @Field() monthlyIncome: number;
-  @Field() firstName: string; // 👈 අලුතින් එක් කළා
+  @Field() firstName: string;
   @Field() lastName: string;
 }
 @ObjectType()
@@ -37,7 +35,7 @@ class DoctorInsightType {
   @Field() id: string;
   @Field() firstName: string;
   @Field() lastName: string;
-  @Field({ nullable: true }) specialization: string; // 👈 මේක තියෙන්නම ඕනේ
+  @Field({ nullable: true }) specialization: string;
   @Field(() => [AppointmentType]) appointments: AppointmentType[];
 }
 
@@ -49,12 +47,11 @@ export class MedicalRecordResolver {
 
   @Query(() => [AppointmentType])
   async getPendingConsultations(@Args('userId') userId: string) {
-    // 👈 මෙතන userId කියන නමම තියෙන්න ඕනේ
     return this.medicalRecordService.getPendingAppointmentsForDoctor(userId);
   }
 
   @Mutation(() => Boolean)
-  @UseGuards(GqlAuthGuard) // දොස්තරට පමණක් අවසර දීමට
+  @UseGuards(GqlAuthGuard)
   async saveMedicalRecord(
     @Args('appointmentId') appointmentId: string,
     @Args('patientName') patientName: string,
@@ -89,7 +86,6 @@ export class MedicalRecordResolver {
     return this.medicalRecordService.getPatientHistory(patientId);
   }
 
-  // Resolver class ඇතුළේ add කරන්න
   @Query(() => PatientType, { nullable: true })
   async getPatientByNIC(@Args('nic') nic: string) {
     return this.medicalRecordService.getPatientByNIC(nic);
@@ -101,7 +97,6 @@ export class MedicalRecordResolver {
     return this.medicalRecordService.getDoctorStats(userId);
   }
   @Query(() => [DoctorInsightType])
-  // @UseGuards(GqlAuthGuard) // අවසර තියෙන අයට පමණයි
   async getAllDoctorInsights(@Args('date') date: string) {
     return this.medicalRecordService.getSuperAdminInsights(date);
   }

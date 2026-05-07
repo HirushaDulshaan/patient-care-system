@@ -26,12 +26,11 @@ export class DoctorService {
     if (userExists) throw new BadRequestException('Email already in use');
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. User සාදන්නේ Password නැතිව සහ isActive: false ලෙසයි
       const user = await tx.user.create({
         data: {
           email,
           role: 'DOCTOR',
-          isActive: false, // ✅ Super Admin අනුමත කරන තෙක් Log විය නොහැක
+          isActive: false,
         },
       });
 
@@ -55,7 +54,6 @@ export class DoctorService {
     });
   }
 
-  // ✅ Super Admin විසින් Access ලබා දීම සඳහා නව ෆන්ක්ෂන් එක
   async approveDoctorAccess(userId: string, password: string) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -64,7 +62,7 @@ export class DoctorService {
       where: { id: userId },
       data: {
         password: hashedPassword,
-        isActive: true, // ✅ දැන් දොස්තරට පද්ධතියට ලොග් විය හැක
+        isActive: true,
       },
     });
   }

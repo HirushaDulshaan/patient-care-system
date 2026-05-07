@@ -22,7 +22,7 @@ const SecurityAuditLogs = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data, loading } = useQuery(GET_AUDIT_LOGS, {
-    pollInterval: 5000, // සෑම තත්පර 5කට වරක්ම අලුත් ලොග්ස් චෙක් කරයි
+    pollInterval: 5000, 
   });
 
   const auditData = data?.getSecurityLogs || [];
@@ -35,7 +35,6 @@ const SecurityAuditLogs = () => {
 
   return (
     <div className="space-y-6 font-sans bg-slate-50 min-h-screen p-4 md:p-8">
-      {/* Header කොටස කලින් වගේමයි... */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 shadow-inner">

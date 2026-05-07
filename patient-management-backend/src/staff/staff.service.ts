@@ -10,10 +10,7 @@ import * as bcrypt from 'bcrypt';
 export class StaffService {
   constructor(private prisma: PrismaService) {}
 
-  /**
-   * 1. Staff Member කෙනෙක් Register කිරීම (Admin විසින් සිදු කරයි)
-   * මෙහිදී password එකක් ලබා නොගන්නා අතර isActive: false ලෙස සකසයි.
-   */
+
   async registerStaff(data: any) {
     const {
       email,
@@ -27,23 +24,20 @@ export class StaffService {
       designation,
     } = data;
 
-    // Email එක දැනටමත් පද්ධතියේ තිබේදැයි පරීක්ෂාව
     const userExists = await this.prisma.user.findUnique({ where: { email } });
     if (userExists) {
       throw new BadRequestException('Email already registered');
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // User record එක සෑදීම (Password රහිතව සහ isActive: false ලෙස)
       const user = await tx.user.create({
         data: {
           email,
           role,
-          isActive: false, // ✅ Super Admin approve කරන තෙක් login විය නොහැක
+          isActive: false,
         },
       });
 
-      // Staff Profile එක සෑදීම
       const profile = await tx.staffProfile.create({
         data: {
           userId: user.id,
@@ -61,10 +55,7 @@ export class StaffService {
     });
   }
 
-  /**
-   * 2. Staff Access Approve කිරීම (Super Admin විසින් සිදු කරයි)
-   * මෙහිදී තාවකාලික Password එකක් ලබා දී isActive: true කරනු ලැබේ.
-   */
+
   async approveStaffAccess(userId: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
@@ -72,7 +63,6 @@ export class StaffService {
       throw new NotFoundException('User not found');
     }
 
-    // Password එක Hash කිරීම
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -80,14 +70,12 @@ export class StaffService {
       where: { id: userId },
       data: {
         password: hashedPassword,
-        isActive: true, // ✅ දැන් පද්ධතියට ලොග් විය හැක
+        isActive: true,
       },
     });
   }
 
-  /**
-   * 3. සියලුම Staff Members ලා ලබා ගැනීම
-   */
+
   async getAllStaff() {
     return this.prisma.staffProfile.findMany({
       include: {
@@ -105,9 +93,7 @@ export class StaffService {
     });
   }
 
-  /**
-   * 4. Staff විස්තර Update කිරීම
-   */
+
   async updateStaff(id: string, data: any) {
     return this.prisma.staffProfile.update({
       where: { id },
@@ -124,9 +110,7 @@ export class StaffService {
     });
   }
 
-  /**
-   * 5. Staff කෙනෙකුගේ Access තාවකාලිකව නැවැත්වීම (Block Access)
-   */
+
   async toggleStaffStatus(userId: string, status: boolean) {
     return this.prisma.user.update({
       where: { id: userId },

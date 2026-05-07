@@ -4,7 +4,7 @@ import { DoctorCategoryResolver } from './doctor-category.resolver';
 import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule], // Database වැඩ වලට PrismaModule ඕනේ
+  imports: [PrismaModule],
   providers: [DoctorCategoryService, DoctorCategoryResolver],
   exports: [DoctorCategoryService],
 })

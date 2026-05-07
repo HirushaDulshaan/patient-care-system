@@ -23,7 +23,7 @@ class ScheduleSlotInput {
 export class DoctorScheduleResolver {
   constructor(private scheduleService: DoctorScheduleService) {}
 
-  @Query(() => [DoctorScheduleType]) // DoctorScheduleType එක model එකේ හදන්න ඕනේ
+  @Query(() => [DoctorScheduleType])
   async getDoctorSchedules(@Args('doctorId') doctorId: string) {
     return this.scheduleService.getSchedulesByDoctor(doctorId);
   }
@@ -38,11 +38,9 @@ export class DoctorScheduleResolver {
     return this.scheduleService.updateDoctorRoster(doctorId, slots);
   }
 
-  // ✅ 2. අලුත් Query එක (Admin Roster පේජ් එක සඳහා - DoctorId එකෙන් දත්ත ගන්නේ)
   @Query(() => [DoctorScheduleType])
-  @UseGuards(GqlAuthGuard) // ආරක්ෂාව සඳහා Guard එක දාන්න
+  @UseGuards(GqlAuthGuard)
   async getDoctorSchedulesForAdmin(@Args('doctorId') doctorId: string) {
-    // සර්විස් එකේ අපි හදපු අලුත් ෆන්ක්ෂන් එකට කතා කරනවා
     return this.scheduleService.getSchedulesByDoctorId(doctorId);
   }
 }

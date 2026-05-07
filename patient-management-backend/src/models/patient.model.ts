@@ -1,4 +1,3 @@
-// src/models/patient.model.ts
 
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { MedicalRecordType } from './medical-record.model';
@@ -16,7 +15,6 @@ export class PatientType {
 
   @Field()
   nic: string;
-  // 👇 Frontend query এ medicalRecords request කරනවා
   @Field(() => [MedicalRecordType], { nullable: true })
   medicalRecords?: MedicalRecordType[];
 }

@@ -1,4 +1,4 @@
-// src/auth/auth.resolver.ts
+
 
 import {
   Resolver,
@@ -56,7 +56,6 @@ export class AuthResolver {
     @Args('password') password: string,
     @Context() context: any,
   ) {
-    // IP address ලබා ගැනීම
     const ip =
       context.req?.headers['x-forwarded-for'] || context.req?.ip || 'Unknown';
 

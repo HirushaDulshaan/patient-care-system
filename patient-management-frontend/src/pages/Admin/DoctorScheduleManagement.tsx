@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Search, Calendar, Trash2, Loader2, CheckCircle2, User } from 'lucide-react';
 import { gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
+import toast from 'react-hot-toast';
 
-// --- GraphQL Queries ---
 const GET_ALL_DOCTORS = gql`
   query GetAllDoctors {
     getAllDoctors {
@@ -48,8 +48,8 @@ const DoctorScheduleManagement = () => {
   });
 
   useEffect(() => {
-    if (scheduleData?.getDoctorSchedules) {
-      const formattedSessions = scheduleData.getDoctorSchedules.map((s: any) => ({
+    if (scheduleData?.getDoctorSchedulesForAdmin) {
+      const formattedSessions = scheduleData.getDoctorSchedulesForAdmin.map((s: any) => ({
         id: s.id,
         date: new Date(s.workingDate).toISOString().split('T')[0],
         startTime: s.startTime,
@@ -64,7 +64,7 @@ const DoctorScheduleManagement = () => {
 
   const [updateRoster, { loading: updateLoading }] = useMutation(UPDATE_DOCTOR_ROSTER, {
     onCompleted: () => {
-      alert("Roster saved successfully! 🚀");
+        toast.success("Roster saved successfully! 🚀");
       refetch();
     },
     onError: (err) => alert("Failed to save: " + err.message)

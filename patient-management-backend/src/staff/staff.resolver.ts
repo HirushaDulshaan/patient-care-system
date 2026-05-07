@@ -10,7 +10,6 @@ import { Role } from '@prisma/client';
 export class StaffResolver {
   constructor(private staffService: StaffService) {}
 
-  // 1. Staff Register කිරීම (Admin සඳහා)
   @Mutation(() => String)
   async registerStaff(
     @Args('email') email: string,
@@ -37,13 +36,11 @@ export class StaffResolver {
     return `Staff Member ${result.profile.firstName} registered successfully! Pending approval.`;
   }
 
-  // 2. සියලුම Staff ලබා ගැනීම
   @Query(() => [StaffProfileType])
   async getAllStaff() {
     return this.staffService.getAllStaff();
   }
 
-  // 3. Staff Access Approve කිරීම (Super Admin සඳහා)
   @Mutation(() => String)
   async approveStaffAccess(
     @Args('userId') userId: string,
@@ -53,8 +50,7 @@ export class StaffResolver {
     return 'Access granted successfully!';
   }
 
-  // 4. Staff Status Toggle කිරීම (Active/Block)
-  @Mutation(() => StaffProfileType) // මෙතන Profile එකම return කරන්න පුළුවන් UI එක update වෙන්න
+  @Mutation(() => StaffProfileType)
   async toggleStaffStatus(
     @Args('userId') userId: string,
     @Args('status') status: boolean,
@@ -63,13 +59,11 @@ export class StaffResolver {
       userId,
       status,
     );
-    // මෙතනදී සාමාන්‍යයෙන් profile එක return කිරීමට service එකෙන් profile එකත් ගෙන්වා ගත යුතුයි
     return this.staffService
       .getAllStaff()
       .then((list) => list.find((s) => s.userId === userId));
   }
 
-  // 5. Staff Update කිරීම
   @Mutation(() => String)
   async updateStaff(
     @Args('id') id: string,

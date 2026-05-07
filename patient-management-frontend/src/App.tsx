@@ -17,7 +17,6 @@ import BillingPage from "./pages/Reciptinets/BillingPage";
 
 // Staff/Doctor Pages
 import StaffDashboard from "./pages/Reciptinets/StaffDashboard";
-import PrescriptionEntry from "./pages/staff/PrescriptionEntry";
 
 // Common
 import HomePage from "./pages/Home";
@@ -41,18 +40,16 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import SpecialistManagement from "./pages/SuperAdmin/Specialist Management";
 import DoctorDutySchedule from "./pages/Doctor/DoctorDutySchedule";
 import DoctorDashboard from "./pages/Doctor/DoctorDashBoard";
+import { Toaster } from 'react-hot-toast'; 
 
-// ✅ 1. ProtectedRoute Component
-// මේකෙන් තමයි බලන්නේ user ලොග් වෙලාද ඉන්නේ කියලා.
-const ProtectedRoute = () => {
+
+
+// Role Security Component
+const RoleRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
+  const role = localStorage.getItem("role");
   const userId = localStorage.getItem("userId");
-  
-  // userId එක නැත්නම් කෙලින්ම login එකට යවනවා. 
-  // 'replace' එක නිසා back button එකෙන් Dashboard එකට එන්න බැහැ.
-  if (!userId) {
-    return <Navigate to="/login" replace />;
-  }
-
+  if (!userId) return <Navigate to="/login" replace />;
+  if (!allowedRoles.includes(role || "")) return <Navigate to="/login" replace />;
   return <Outlet />;
 };
 
@@ -61,34 +58,47 @@ function App() {
 
   return (
     <Router>
+      
+      <Toaster
+        position="top-center"
+        toastOptions={{
+         
+          style: {
+            borderRadius: '15px',
+            background: '#0F172A', 
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            padding: '16px',
+          },
+          success: {
+           
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            
+            iconTheme: {
+              primary: '#EF4444', // Red 500
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Routes>
-        {/* --- Public Routes (ඕනෑම කෙනෙක්ට බලන්න පුළුවන්) --- */}
+        {/* --- Public Routes --- */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/specialists" element={<SpecialistDirectory />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
 
-        {/* --- Private / Protected Routes (ලොග් වුණොත් විතරයි බලන්න පුළුවන්) --- */}
-        <Route element={<ProtectedRoute />}>
-          
-          {/* --- Admin Group --- */}
-          <Route element={<AdminLayout />}>
-            <Route path="/admin/dashboard" element={<AdminOverview />} />
-            <Route path="/admin/staff" element={<StaffManagement />} />
-            <Route path="/admin/schedule" element={<DoctorScheduleManagement />} />
-            <Route path="/admin/doctors" element={<DoctorManagement />} />
-          </Route>
+       
 
-          {/* --- Receptionist Routes --- */}
-          <Route element={<Layout />}>
-            <Route path="/staff/dashboard" element={<StaffDashboard />} />
-            <Route path="/reception/register" element={<RegisterPatient />} />
-            <Route path="/reception/billing" element={<BillingPage />} />
-            <Route path="/reception/roster" element={<DoctorRoster />} />
-          </Route>
-
-          {/* --- Super Admin Routes --- */}
+        {/* --- SUPER ADMIN ONLY --- */}
+        <Route element={<RoleRoute allowedRoles={['SUPER_ADMIN']} />}>
           <Route element={<SuperAdminLayout />}>
             <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
             <Route path="/superadmin/staff" element={<SuperAdminStaffManagement />} />
@@ -97,24 +107,39 @@ function App() {
             <Route path="/superadmin/insights" element={<DoctorPatientInsights />} />
             <Route path="/superadmin/SpecialistManagement" element={<SpecialistManagement />} />
           </Route>
+        </Route>
 
-          {/* --- Doctor Routes --- */}
+        {/* --- ADMIN ONLY --- */}
+        <Route element={<RoleRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']} />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/dashboard" element={<AdminOverview />} />
+            <Route path="/admin/staff" element={<StaffManagement />} />
+            <Route path="/admin/schedule" element={<DoctorScheduleManagement />} />
+            <Route path="/admin/doctors" element={<DoctorManagement />} />
+          </Route>
+        </Route>
+
+        {/* --- DOCTOR ONLY --- */}
+        <Route element={<RoleRoute allowedRoles={['DOCTOR']} />}>
           <Route element={<DoctorLayout />}>
             <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
             <Route path="/doctor/patients" element={<PatientConsultation />} />
             <Route path="/doctor/records" element={<NewMedicalRecord />} />
-            <Route 
-              path="/doctor/schedule" 
-              element={<DoctorDutySchedule doctorId={currentUserId} />} 
-            />
+            <Route path="/doctor/schedule" element={<DoctorDutySchedule doctorId={currentUserId} />} />
           </Route>
-
-          {/* Staff/Medical Routes */}
-          <Route path="/staff/prescription" element={<PrescriptionEntry />} />
         </Route>
 
-        {/* --- Default & 404 Logic --- */}
-        {/* URL එක වැරදුණොත් හෝ පේජ් එක නැත්නම් Login එකට යවමු */}
+        {/* --- RECEPTIONIST & STAFF --- */}
+        <Route element={<RoleRoute allowedRoles={['RECEPTIONIST', 'STAFF', 'ADMIN']} />}>
+          <Route element={<Layout />}>
+            <Route path="/staff/dashboard" element={<StaffDashboard />} />
+            <Route path="/reception/register" element={<RegisterPatient />} />
+            <Route path="/reception/billing" element={<BillingPage />} />
+            <Route path="/reception/roster" element={<DoctorRoster />} />
+          </Route>
+        </Route>
+
+        {/* --- Default 404 --- */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>

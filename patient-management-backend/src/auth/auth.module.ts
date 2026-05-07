@@ -1,21 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthResolver } from './auth.resolver'; // Meka provider ekak widihata thiyenna ona
+import { AuthResolver } from './auth.resolver';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
-import { AuditService } from '../audit/audit.service'; // Meka import karanna
+import { AuditService } from '../audit/audit.service';
 
 @Module({
   imports: [
     PrismaModule,
-    // src/auth/auth.module.ts
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'MY_SECRET_KEY_123', // .env එකේ නැති වුණොත් විතරයි අනිත් එක ගන්නේ
+      secret: process.env.JWT_SECRET || 'MY_SECRET_KEY_123',
       signOptions: { expiresIn: '1h' },
     }),
   ],
   providers: [AuthService, AuthResolver, JwtStrategy, AuditService],
-  // controllers: [AuthController] // (Oyalage controller ekak thiyenawa nam meka athi)
 })
 export class AuthModule {}

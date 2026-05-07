@@ -15,6 +15,7 @@ import { AppointmentModule } from './appointments/apoiment.module';
 import { MedicalRecordModule } from './medical-record/medical-record.module';
 import { FinanceModule } from './finance/finance.module';
 import { AuditModule } from './audit/audit.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -28,11 +29,11 @@ import { AuditModule } from './audit/audit.module';
     MedicalRecordModule,
     AppointmentModule,
     AuditModule,
-    // Menna meka thama oyaata adu wela thiyenne
+    AdminModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      playground: true, // Browser playground eka enable karanawa
+      playground: true,
     }),
     FinanceModule,
   ],

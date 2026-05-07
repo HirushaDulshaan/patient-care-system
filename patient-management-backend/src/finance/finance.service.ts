@@ -1,4 +1,3 @@
-// src/finance/finance.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -18,7 +17,6 @@ export class FinanceService {
       startDate.setHours(0, 0, 0, 0); // Daily
     }
 
-    // 1. Completed Appointments ගණන
     const appointments = await this.prisma.appointment.findMany({
       where: {
         status: 'COMPLETED',
@@ -29,7 +27,6 @@ export class FinanceService {
 
     const totalCompleted = appointments.length;
 
-    // 💸 2500 Revenue | 2000 Expense Logic
     const totalRevenue = totalCompleted * 2500;
     const totalExpenses = totalCompleted * 2000;
     const netProfit = totalRevenue - totalExpenses;
